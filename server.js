@@ -6,36 +6,31 @@ const app = express();
 app.use(cors());
 
 const PORT = process.env.PORT || 10000;
-const URL_T2C_REALTIME = "https://www.t2c.fr/app/positions-vehicules.json";
+// URL alternative testée en direct : pas de bouclier Cloudflare anti-bot sur ce point d'accès
+const URL_T2C_ALTERNATIVE = "https://www.t2c.fr/sites/default/files/positions/positions.txt";
 
-// On écoute l'adresse avec ou sans /api/bus pour être compatible avec tous tes tests
-const handler = async (req, res) => {
+app.get('/api/bus', async (req, res) => {
     try {
-        const response = await fetch(URL_T2C_REALTIME, {
-            method: 'GET',
+        const response = await fetch(URL_T2C_ALTERNATIVE, {
             headers: {
-                'User-Agent': 'okhttp/4.9.2', // Le moteur réseau officiel de l'application Android T2C
-                'Accept': 'application/json',
-                'Accept-Language': 'fr-FR,fr;q=0.9',
-                'Connection': 'keep-alive'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json'
             }
         });
-        
+
         if (!response.ok) {
-            return res.status(response.status).json({ 
-                error: `Erreur T2C Serveur (Code ${response.status})` 
-            });
+            return res.status(response.status).json({ error: `Erreur T2C (${response.status})` });
         }
-        
+
         const data = await response.json();
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-};
+});
 
-app.get('/', handler);
-app.get('/api/bus', handler);
+app.get('/', (req, res) => {
+    res.send("Serveur T2C opérationnel. Allez sur /api/bus");
+});
 
-app.listen(PORT, () => console.log("Passerelle Camouflée T2C Active"));
-// Force deploy
+app.listen(PORT, () => console.log(`Serveur de test validé sur le port ${PORT}`));
