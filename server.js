@@ -3,13 +3,12 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+app.use(cors()); // C'est cette ligne qui débloque la sécurité pour Netlify !
 
 const PORT = process.env.PORT || 10000;
 const URL_T2C_REALTIME = "https://www.t2c.fr/app/positions-vehicules.json";
 
-// On écoute directement sur la racine "/" au lieu de "/api/bus"
-app.get('/', async (req, res) => {
+app.get('/api/bus', async (req, res) => {
     try {
         const response = await fetch(URL_T2C_REALTIME, {
             headers: {
@@ -21,10 +20,10 @@ app.get('/', async (req, res) => {
         if (!response.ok) return res.status(response.status).json({ error: "Erreur T2C" });
         
         const data = await response.json();
-        res.json(data);
+        res.json(data); // On envoie le JSON brut de l'appli T2C
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-app.listen(PORT, () => console.log(`Passerelle racine T2C Active`));
+app.listen(PORT, () => console.log(`Serveur T2C en ligne`));
