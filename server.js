@@ -8,7 +8,8 @@ app.use(cors());
 const PORT = process.env.PORT || 10000;
 const URL_T2C_REALTIME = "https://www.t2c.fr/app/positions-vehicules.json";
 
-app.get('/api/bus', async (req, res) => {
+// On écoute directement sur la racine "/" au lieu de "/api/bus"
+app.get('/', async (req, res) => {
     try {
         const response = await fetch(URL_T2C_REALTIME, {
             headers: {
@@ -20,11 +21,10 @@ app.get('/api/bus', async (req, res) => {
         if (!response.ok) return res.status(response.status).json({ error: "Erreur T2C" });
         
         const data = await response.json();
-        // On envoie la totalité du fichier brut de l'appli T2C à Netlify
         res.json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-app.listen(PORT, () => console.log(`Passerelle T2C Active`));
+app.listen(PORT, () => console.log(`Passerelle racine T2C Active`));
